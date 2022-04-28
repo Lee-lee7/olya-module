@@ -1,6 +1,0 @@
-hello.admin:
-  title: 'Cats list'
-  description: 'This module creates a page with a list of cats and a form where users can leave photos of their pets.'
-  parent: system.admin_structure
-  route_name: liadmin.content
-  weight: 100

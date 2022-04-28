@@ -47,40 +47,35 @@ class CatForm extends FormBase {
       ],
       '#suffix' => '<div class="email-validation-message"></div>'
     ];
- /*   $form['my_file']['image_dir'] = [
-      '#type' => 'managed_file',
-      '#title' => $this -> t('Upload image:'),
-      '#description' => $this->t('Only JPG, PNG and JPEG files are allowed. Size limit is 2MB'),
-      '#required' => TRUE,
-      '#upload_valiators' => [
-        'file_validate_extensions' => ['jpeg jpg png'],
-        'file_validate_size' => [25600000],
-      ],
-      '#upload_location' => 'public://images',
-    ]; */
     $form['image'] = [
       '#type' => 'managed_file',
-      '#title' => 'Add image:',
+      '#title' => $this -> t('Upload image:'),
       '#name' => 'image',
-      '#description' => $this->t('jpg, png, jpeg <br> max-size: 5MB'),
+      '#description' => $this->t('Only JPG, PNG and JPEG files are allowed. Size limit is 2MB'),
+      '#required' => TRUE,
       '#upload_validators' => [
         'file_validate_extensions' => array('png jpg jpeg'),
-        'file_validate_size' => array(5242880),
+        'file_validate_size' => array(25600000),
       ],
-      '#upload_location' => 'public://images/image/'
+      '#upload_location' => 'public://images/'
     ];
    
     $form['actions']['#type'] = 'actions';
    
     $form['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Add feedback'),
+      '#value' => $this->t('Add cat'),
       '#button_type' => 'primary',
       '#ajax' => [
         'event' => 'click',
-        'progress' => 'none',
+        'progress' => [
+          'type' => 'throbber',
+          'message' => t('Adding the cat\'s name..'),
+        ],
         'callback' => '::submitAjax',
+        'wrapper' => 'box-container',
       ],
+      
     ];
     return $form;
   }
@@ -99,10 +94,10 @@ class CatForm extends FormBase {
     if (strlen($form_state->getValue('name')) > 32) {
       $form_state->setErrorByName('name', $this->t('Name of the cat is too long.'));
     }  
-    /*$img = $form_state->getValue(['my_file' => 'image_dir']);
-    if (empty($img)) {
-      $form_state->setErrorByName('my_file', $this->t('No image found'));
-    } */
+    $my_file = $form_state->getValue('image');
+    if (empty($my_file)) {
+      $form_state->setErrorByName('image', $this->t('No image found'));
+    } 
   }
 
   protected function validateEmail(array &$form, FormStateInterface $form_state) {
@@ -143,12 +138,11 @@ class CatForm extends FormBase {
     }
     // Database connection
     $database = \Drupal::database();
-    $database->insert('db')
+    $database->insert('zin')
     ->fields([
     'name' => $form_state->getValue('name'),
     'email' => $form_state->getValue('email'),
     'image' => $image[0],
-   // 'timestamp' => date('Y-m-d h:m:s'),
 
     ])
       ->execute();
@@ -165,7 +159,7 @@ class CatForm extends FormBase {
       }
       // Modal message about successful data save.
       else {
-        $response->addCommand(new MessageCommand($this->t('Your feedback has been saved successfully.'), NULL, ['type' => 'status'], TRUE));
+        $response->addCommand(new MessageCommand($this->t('Name of the cat was added!'), NULL, ['type' => 'status'], TRUE));
         $form_state->setRebuild(TRUE);
       }
       $this->messenger()->deleteAll();

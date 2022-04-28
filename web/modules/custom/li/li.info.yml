@@ -1,6 +1,0 @@
-name: Hello Module by Li
-description: Creates a page showing "Hello! You can add here a photo of your cat".
-package: Custom
-type: module
-version: 1.0
-core_version_requirement: ^8.8.0 || ^9

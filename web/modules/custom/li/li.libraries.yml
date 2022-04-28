@@ -1,9 +1,0 @@
-ajax-patch:
-  version: 1.x
-  js:
-    js/ajax-prototype-beforeSend-patch.js: { }
-  dependencies:
-    - core/jquery.form
-    - core/jquery
-    - core/drupal.dialog.ajax
-  
