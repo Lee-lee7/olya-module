@@ -1,51 +1,64 @@
 <?php
 
+/**
+ * @file
+ * Install, create tables to store reviews.
+ */
+
 use Drupal\file\Entity\File;
 
 /**
  * Implements hook_schema().
  */
-function zin_schema() {
-  $schema['zin'] = [                   
-    'description' => 'Cat info database',            
-    'fields' => [                              
-      'id' => [                                
-        'description' => 'Primary Key: Unique record ID.',                      
-        'type' => 'serial',                         
-        'unsigned' => TRUE,                         
-        'not null' => TRUE,                         
-      ],
-      'cat_name' => [
-        'description' => 'Name of the cat',
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'email' => [
-        'description' => 'User email',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'cat_image' => [
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'Unique ID of the cat\'s image.',
-      ],
-      'timestamp' => [
-        'description' => 'Timestamp',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ],
-    ],
-    'primary key' => [
-      'id',
-    ],
-  ];
 
-  return $schema;
+function zin_schema(): array{
+    $schema['db'] = array (
+        'description'=>'database guest book',
+        'fields' => [
+            'id' => [
+              'type' => 'serial',
+              'not null' => TRUE,
+              'unsigned' => TRUE,
+              'description' => 'Primary key',
+            ],
+            'name' => [
+                'type' => 'varchar',
+                'length' => 100,
+                //'not null' => TRUE,
+                'description' => 'User name',
+            ],
+            'email' => [
+                'type' => 'varchar',
+                'length' => 255,
+                //'not null' => TRUE,
+                'description' => 'User email',
+            ],
+            'image' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'description' => 'User image',
+            ],
+            'timestamp' => [
+              'type' => 'int',
+            //  'not null' => TRUE,
+              'description' => 'Date created.',
+              ],
+            ],
+        'primary key' => ['id'],
+    );
+    return $schema;
+}
+/*
+Delete the database table when removing the module
+*/
+function db_uninstall($is_syncing) {
+  $database = Drupal::database();
+  $result = $database->select('guestbook', 'g')
+    ->fields('g', ['image'])
+    ->execute();
+  foreach ($result as $row) {
+    if($row->image){
+      File::load($row->image)->delete();
+    } 
+  }
 }

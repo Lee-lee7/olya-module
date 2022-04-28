@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file
+ * Install, create tables to store reviews.
+ */
+
+use Drupal\file\Entity\File;
+
+/**
+ * Implements hook_schema().
+ */
+
+function li_schema(): array{
+    $schema['li'] = array (
+        'description'=>'database guest book',
+        'fields' => [
+            'id' => [
+              'type' => 'serial',
+              'not null' => TRUE,
+              'unsigned' => TRUE,
+              'description' => 'Primary key',
+            ],
+            'name' => [
+                'type' => 'varchar',
+                'length' => 100,
+                //'not null' => TRUE,
+                'description' => 'User name',
+            ],
+            'email' => [
+                'type' => 'varchar',
+                'length' => 255,
+                //'not null' => TRUE,
+                'description' => 'User email',
+            ],
+            'image' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'description' => 'User image',
+            ],
+            'timestamp' => [
+              'type' => 'int',
+            //  'not null' => TRUE,
+              'description' => 'Date created.',
+              ],
+            ],
+        'primary key' => ['id'],
+    );
+    return $schema;
+}
+/*
+Delete the database table when removing the module
+*/
+function li_uninstall($is_syncing) {
+  $database = Drupal::database();
+  $result = $database->select('guestbook', 'g')
+    ->fields('g', ['image'])
+    ->execute();
+  foreach ($result as $row) {
+    if($row->image){
+      File::load($row->image)->delete();
+    } 
+  }
+}

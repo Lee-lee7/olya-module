@@ -1,0 +1,30 @@
+hello.content:
+  path: "/li/cats"
+  defaults:
+    _title: 'Hello! You can add here a photo of your cat.'
+    _controller: '\Drupal\li\Controller\HelloController::build'
+  requirements:
+    _permission: "access content"
+
+li.content:
+  path: "/li/cats/{id}/delete"
+  defaults:
+    _form: '\Drupal\li\Form\Lidelete'
+  requirements:
+    _permission: 'administer'
+
+
+liedit.content:
+  path: "/li/cats/{id}/edit"
+  defaults:
+    _form: '\Drupal\li\Form\Liedit'
+  requirements:
+    _permission: 'administer'
+
+liadmin.content:
+  path: '/admin/structure/cats'
+  defaults:
+    _title: 'list cats'
+    _form: '\Drupal\li\Form\Liadmin'
+  requirements:
+    _permission: 'administer'

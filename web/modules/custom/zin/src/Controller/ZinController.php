@@ -8,8 +8,6 @@
 namespace Drupal\zin\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\zin\Form\CatsForm;
-use Drupal\file\Entity\File;
 
 /**
  * Returns responses for zin routes.
@@ -29,20 +27,20 @@ class ZinController extends ControllerBase {
       '#markup' => '<div class="process-heading">' . $this->t('Hello! You can add here a photo of your cat.') . '</div>',
     ];
     $heading = [
-      'cat_name' => t('Cat\'s name'),
+      'name' => t('Cat\'s name'),
       'email' => t('E-mail'),
-      'cat_image' => t('Cat\'s image'),
+      'image' => t('Cat\'s image'),
       'timestamp' => t('Submitting date'),
     ];
-    $cats['table'] = [
+   /* $cats['table'] = [
       '#type' => 'table',
       '#header' => $heading,
       '#rows' => $this->getCatsInfo(),
-    ];
-    return [$build['header'], $form, $cats];
+    ]; */
+    return [$build['header'], $form];
   }
 
-  public function getCatsInfo() {
+/*  public function getCatsInfo() {
     $output = \Drupal::database()->select('zin', 'm')
       ->fields('m', ['cat_name', 'email', 'cat_image', 'timestamp'])
       ->orderBy('id', 'DESC')
@@ -57,7 +55,7 @@ class ZinController extends ControllerBase {
       ];
     }
   return $data;
-  }
+  } */
 }
 
 

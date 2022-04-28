@@ -25,7 +25,7 @@ class CatForm extends FormBase {
       '#type' => 'container',
       '#attributes' => ['id' => 'box-container'],
     ];
-    $form['cat_name'] = [
+    $form['name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Your cat\'s name:'),
       '#maxlength' => 32,
@@ -47,7 +47,7 @@ class CatForm extends FormBase {
       ],
       '#suffix' => '<div class="email-validation-message"></div>'
     ];
-    $form['my_file']['image_dir'] = [
+ /*   $form['my_file']['image_dir'] = [
       '#type' => 'managed_file',
       '#title' => $this -> t('Upload image:'),
       '#description' => $this->t('Only JPG, PNG and JPEG files are allowed. Size limit is 2MB'),
@@ -57,20 +57,30 @@ class CatForm extends FormBase {
         'file_validate_size' => [25600000],
       ],
       '#upload_location' => 'public://images',
+    ]; */
+    $form['image'] = [
+      '#type' => 'managed_file',
+      '#title' => 'Add image:',
+      '#name' => 'image',
+      '#description' => $this->t('jpg, png, jpeg <br> max-size: 5MB'),
+      '#upload_validators' => [
+        'file_validate_extensions' => array('png jpg jpeg'),
+        'file_validate_size' => array(5242880),
+      ],
+      '#upload_location' => 'public://images/image/'
     ];
+   
     $form['actions']['#type'] = 'actions';
-    $form['actions']['submit'] = [
+   
+    $form['submit'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Add cat'),
+      '#value' => $this->t('Add feedback'),
       '#button_type' => 'primary',
       '#ajax' => [
-        'callback' => '::ajaxSubmit',
-        'wrapper' => 'box-container',
-        'progress' => [
-          'type' => 'throbber',
-          'message' => t('Adding the cat\'s name..'),
-        ],        
-      ],  
+        'event' => 'click',
+        'progress' => 'none',
+        'callback' => '::submitAjax',
+      ],
     ];
     return $form;
   }
@@ -83,16 +93,16 @@ class CatForm extends FormBase {
   }
 
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    if (strlen($form_state->getValue('cat_name')) < 2) {
-      $form_state->setErrorByName('cat_name', $this->t('Name of the cat is too short.'));
+    if (strlen($form_state->getValue('name')) < 2) {
+      $form_state->setErrorByName('name', $this->t('Name of the cat is too short.'));
     }
-    if (strlen($form_state->getValue('cat_name')) > 32) {
-      $form_state->setErrorByName('cat_name', $this->t('Name of the cat is too long.'));
+    if (strlen($form_state->getValue('name')) > 32) {
+      $form_state->setErrorByName('name', $this->t('Name of the cat is too long.'));
     }  
-    $img = $form_state->getValue(['my_file' => 'image_dir']);
+    /*$img = $form_state->getValue(['my_file' => 'image_dir']);
     if (empty($img)) {
       $form_state->setErrorByName('my_file', $this->t('No image found'));
-    }
+    } */
   }
 
   protected function validateEmail(array &$form, FormStateInterface $form_state) {
@@ -124,32 +134,42 @@ class CatForm extends FormBase {
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->messenger()->addStatus(t("Name of the cat was added!"));
+    $image = $form_state->getValue('image');
+    //If the image is uploaded, save it in the database
+    if ($image) {
+        $file = File::load($image[0]);
+        $file->setPermanent();
+        $file->save();
+    }
+    // Database connection
     $database = \Drupal::database();
-//    $picture = $form_state->getValue('my_file');
-//    $file = File::load($picture[0]);
-//    $file->setPermanent();
-//    $file->save();
-    $database->insert('zin')->fields([
-      'cat_name' => $form_state->getValue('cat_name'),
-      'email' => $form_state->getValue('email'),
-//    'cat_image' => $picture[0],
-      'timestamp' => date('d-m-Y H:i:s', strtotime('+3 hour')),
+    $database->insert('db')
+    ->fields([
+    'name' => $form_state->getValue('name'),
+    'email' => $form_state->getValue('email'),
+    'image' => $image[0],
+   // 'timestamp' => date('Y-m-d h:m:s'),
+
     ])
       ->execute();
   }
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function ajaxSubmit(array &$form, FormStateInterface $form_state) {
-    $element = $form['container'];
-    $email = $form_state->getValue('email');
-    $stableExpression = '/^[A-Za-z_\-]+@\w+(?:\.\w+)+$/';
-    if (($form_state->hasAnyErrors()) || (!preg_match($stableExpression, $email))) {
-      return $element;
+    // Submit form with Ajax.
+    public function submitAjax(array &$form, FormStateInterface $form_state): AjaxResponse {
+      $response = new AjaxResponse();
+      // Modal message about errors in form
+      if ($form_state->getErrors()) {
+        foreach ($form_state->getErrors() as $err) {
+          $response->addCommand(new MessageCommand($err, NULL, ['type' => 'error']));
+        }
+        $form_state->clearErrors();
+      }
+      // Modal message about successful data save.
+      else {
+        $response->addCommand(new MessageCommand($this->t('Your feedback has been saved successfully.'), NULL, ['type' => 'status'], TRUE));
+        $form_state->setRebuild(TRUE);
+      }
+      $this->messenger()->deleteAll();
+      return $response;
     }
-    return $element;
-  }
 
 }

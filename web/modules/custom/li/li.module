@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function li_theme($existing, $type, $theme, $path): array {
+  return [
+    'li-theme' => [
+      'variables' => [
+        'form' => NULL,
+        'cats' => NULL,
+      ],
+      ],
+  ];
+}
